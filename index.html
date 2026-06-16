@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clean Energy Awareness Assistant - UN SDG 7</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e8ba3 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 90vh;
+            max-height: 700px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2563eb 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .language-toggle {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            display: flex;
+            gap: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .lang-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 15px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: transparent;
+            color: white;
+        }
+
+        .lang-btn.active {
+            background: white;
+            color: #1e3c72;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .lang-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .header .icon {
+            font-size: 28px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .sdg-badge {
+            display: inline-block;
+            background: #fbbf24;
+            color: #1e3c72;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            display: flex;
+            gap: 10px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .message.ai .message-avatar {
+            background: linear-gradient(135deg, #2563eb, #1e3c72);
+            color: white;
+        }
+
+        .message.user .message-avatar {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: white;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 16px;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+
+        .message.ai .message-content {
+            background: white;
+            color: #1e293b;
+            border: 2px solid #e2e8f0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #2563eb, #1e3c72);
+            color: white;
+        }
+
+        .message-content strong {
+            color: #1e3c72;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .message.user .message-content strong {
+            color: #fbbf24;
+        }
+
+        .message-content ul {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+
+        .message-content li {
+            margin: 4px 0;
+        }
+
+        .stat-highlight {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .input-container {
+            padding: 20px;
+            background: white;
+            border-top: 2px solid #e2e8f0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        #userInput {
+            width: 100%;
+            padding: 14px 20px;
+            border: 2px solid #cbd5e1;
+            border-radius: 25px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        #userInput:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        #askButton {
+            padding: 14px 30px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #1e3c72;
+            border: none;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(251, 191, 36, 0.3);
+        }
+
+        #askButton:hover {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(251, 191, 36, 0.4);
+        }
+
+        #askButton:active {
+            transform: translateY(0);
+        }
+
+        .disclaimer {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 8px 12px;
+            margin-top: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #92400e;
+        }
+
+        /* Quiz Section Styles */
+        .quiz-section {
+            background: white;
+            border-top: 2px solid #e2e8f0;
+            padding: 20px;
+        }
+
+        .quiz-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .quiz-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1e3c72;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #quizButton {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #2563eb, #1e3c72);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+        }
+
+        #quizButton:hover {
+            background: linear-gradient(135deg, #1e3c72, #1e293b);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(37, 99, 235, 0.4);
+        }
+
+        #quizButton:active {
+            transform: translateY(0);
+        }
+
+        .quiz-content {
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .quiz-content.active {
+            display: block;
+        }
+
+        .quiz-question {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .quiz-question h3 {
+            color: #1e3c72;
+            font-size: 15px;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .quiz-option {
+            padding: 12px 15px;
+            background: white;
+            border: 2px solid #cbd5e1;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            color: #334155;
+        }
+
+        .quiz-option:hover {
+            border-color: #2563eb;
+            background: #eff6ff;
+            transform: translateX(5px);
+        }
+
+        .quiz-option.correct {
+            background: #dcfce7;
+            border-color: #22c55e;
+            color: #166534;
+            font-weight: bold;
+        }
+
+        .quiz-option.incorrect {
+            background: #fee2e2;
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+
+        .quiz-option.disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .quiz-feedback.correct {
+            background: #dcfce7;
+            color: #166534;
+            border: 2px solid #22c55e;
+        }
+
+        .quiz-feedback.incorrect {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 2px solid #ef4444;
+        }
+
+        .quiz-score {
+            text-align: center;
+            padding: 10px;
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border-radius: 10px;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #92400e;
+        }
+
+        /* Scrollbar styling */
+        .chat-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-container::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        .chat-container::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .chat-container::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                height: 100vh;
+                max-height: 100vh;
+                border-radius: 0;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .message-content {
+                max-width: 85%;
+                font-size: 13px;
+            }
+
+            #askButton {
+                padding: 14px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <span class="icon">🌱</span>
+                Clean Energy Awareness Assistant
+            </h1>
+            <p>Your AI Mentor for Sustainable Energy Solutions</p>
+            <span class="sdg-badge">UN SDG 7: Affordable & Clean Energy</span>
+        </div>
+
+        <div class="chat-container" id="chatContainer">
+            <!-- Messages will be added here dynamically -->
+        </div>
+
+        <div class="input-container">
+            <div class="input-wrapper">
+                <input
+                    type="text"
+                    id="userInput"
+                    placeholder="Ask me about solar, wind, or clean energy..."
+                    autocomplete="off"
+                />
+            </div>
+            <button id="askButton">Ask AI</button>
+        </div>
+
+        <div class="quiz-section">
+            <div class="quiz-header">
+                <div class="quiz-title">
+                    <span>🧠</span>
+                    Quick Green Quiz
+                </div>
+                <button id="quizButton">Test My Knowledge</button>
+            </div>
+            <div class="quiz-content" id="quizContent">
+                <!-- Quiz questions will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Predefined responses with statistics and facts
+        const responses = {
+            solar: {
+                title: "☀️ Solar Energy Information",
+                content: `Solar energy is one of the fastest-growing renewable energy sources worldwide. Here are some key facts:
+
+• <span class="stat-highlight">Solar panels typically last 25-30 years</span> with minimal maintenance
+• Solar energy can reduce your carbon footprint by <span class="stat-highlight">up to 80%</span> compared to fossil fuels
+• The cost of solar panels has decreased by <span class="stat-highlight">over 90% since 2010</span>
+• A typical residential solar system can save <span class="stat-highlight">$1,000-$2,000 annually</span> on electricity bills
+• Solar photovoltaic (PV) technology converts sunlight directly into electricity
+• Global solar capacity reached <span class="stat-highlight">over 1,000 GW in 2022</span>, enough to power 180 million homes
+
+Solar energy is clean, renewable, and increasingly affordable, making it a key solution for achieving UN SDG 7.`
+            },
+            wind: {
+                title: "💨 Wind Energy Information",
+                content: `Wind energy is a powerful and clean renewable energy source. Here are important facts:
+
+• A single modern wind turbine can power <span class="stat-highlight">1,500+ homes</span>
+• Wind energy produces <span class="stat-highlight">zero greenhouse gas emissions</span> during operation
+• The wind energy sector employed <span class="stat-highlight">over 1.3 million people globally</span> in 2022
+• Offshore wind farms can generate <span class="stat-highlight">2-3 times more energy</span> than onshore turbines
+• Wind turbines have a lifespan of <span class="stat-highlight">20-25 years</span>
+• Global wind capacity grew by <span class="stat-highlight">93 GW in 2022</span>, a record increase
+• Wind energy costs have fallen by <span class="stat-highlight">70% over the past decade</span>
+
+Wind power is one of the most cost-effective renewable energy sources and plays a crucial role in the clean energy transition.`
+            },
+            energy: {
+                title: "⚡ Clean Energy Overview",
+                content: `Clean and renewable energy is essential for sustainable development. Key insights:
+
+• Renewable energy accounted for <span class="stat-highlight">29% of global electricity generation</span> in 2022
+• Investment in renewable energy reached <span class="stat-highlight">$500 billion globally</span> in 2022
+• Clean energy jobs grew to <span class="stat-highlight">over 12 million worldwide</span>
+• Renewable energy can provide <span class="stat-highlight">90% of global electricity</span> by 2050
+• UN SDG 7 aims for <span class="stat-highlight">universal access to affordable, reliable, and modern energy</span> by 2030
+• Transitioning to clean energy could prevent <span class="stat-highlight">4-7 million premature deaths</span> annually from air pollution
+• Every dollar invested in renewable energy creates <span class="stat-highlight">3 times more jobs</span> than fossil fuels
+
+Clean energy sources include solar, wind, hydro, geothermal, and biomass. They are crucial for combating climate change and ensuring energy security.`
+            },
+            efficiency: {
+                title: "💡 Energy Efficiency Tips",
+                content: `Energy efficiency is the fastest way to reduce energy consumption and costs. Here are proven strategies:
+
+• LED bulbs use <span class="stat-highlight">75% less energy</span> than traditional incandescent bulbs and last 25 times longer
+• Proper insulation can reduce heating/cooling costs by <span class="stat-highlight">up to 30%</span>
+• Energy-efficient appliances can save <span class="stat-highlight">$500+ annually</span> on utility bills
+• Smart thermostats can reduce energy use by <span class="stat-highlight">10-23%</span>
+• Unplugging devices when not in use can save <span class="stat-highlight">5-10%</span> on electricity bills
+• Energy-efficient windows can reduce energy loss by <span class="stat-highlight">up to 50%</span>
+• Regular HVAC maintenance improves efficiency by <span class="stat-highlight">15-20%</span>
+
+Small changes in daily habits combined with efficient technology can significantly reduce your energy footprint and costs.`
+            },
+            default: {
+                title: "🌍 General Clean Energy Guidance",
+                content: `Thank you for your interest in clean energy! I can provide information about:
+
+• <strong>Solar Energy</strong> - Ask about solar panels, costs, and benefits
+• <strong>Wind Energy</strong> - Learn about wind turbines and wind power
+• <strong>Clean Energy</strong> - Discover renewable energy sources and statistics
+• <strong>Energy Efficiency</strong> - Get tips to reduce energy consumption
+
+Please ask a specific question about any of these topics, and I'll provide detailed information with facts and statistics.
+
+Remember: While I provide educational information, always consult certified energy professionals and financial advisors before making investment decisions.`
+            }
+        };
+
+        // Initialize chat with greeting
+        function initializeChat() {
+            const greeting = {
+                type: 'ai',
+                content: `Hi, I am an AI Mentor for Clean Energy. Please consult certified experts before making financial investments.
+
+I'm here to help you learn about renewable energy and sustainable practices aligned with UN Sustainable Development Goal 7 (Affordable and Clean Energy).
+
+Feel free to ask me about solar energy, wind power, energy efficiency, or general clean energy topics!`
+            };
+            addMessage(greeting);
+        }
+
+        // Add message to chat
+        function addMessage(message) {
+            const chatContainer = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${message.type}`;
+
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = message.type === 'ai' ? '🤖' : '👤';
+
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            content.innerHTML = message.content;
+
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(content);
+            chatContainer.appendChild(messageDiv);
+
+            // Scroll to bottom
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Process user question
+        function processQuestion(question) {
+            const lowerQuestion = question.toLowerCase();
+            let response;
+
+            if (lowerQuestion.includes('solar') || lowerQuestion.includes('sun') || lowerQuestion.includes('panel')) {
+                response = responses.solar;
+            } else if (lowerQuestion.includes('wind') || lowerQuestion.includes('turbine')) {
+                response = responses.wind;
+            } else if (lowerQuestion.includes('energy') || lowerQuestion.includes('renewable') || lowerQuestion.includes('clean') || lowerQuestion.includes('sdg')) {
+                response = responses.energy;
+            } else if (lowerQuestion.includes('efficiency') || lowerQuestion.includes('save') || lowerQuestion.includes('reduce') || lowerQuestion.includes('tip')) {
+                response = responses.efficiency;
+            } else {
+                response = responses.default;
+            }
+
+            return `<strong>${response.title}</strong><br><br>${response.content}`;
+        }
+
+        // Handle ask button click
+        function handleAsk() {
+            const input = document.getElementById('userInput');
+            const question = input.value.trim();
+
+            if (question === '') {
+                return;
+            }
+
+            // Add user message
+            addMessage({
+                type: 'user',
+                content: question
+            });
+
+            // Clear input
+            input.value = '';
+
+            // Process and add AI response
+            setTimeout(() => {
+                const aiResponse = processQuestion(question);
+                addMessage({
+                    type: 'ai',
+                    content: aiResponse
+                });
+            }, 500);
+        }
+
+        // Quiz questions database
+        const quizQuestions = [
+            {
+                question: "What percentage of global electricity generation came from renewable energy in 2022?",
+                options: ["15%", "29%", "45%", "60%"],
+                correct: 1,
+                explanation: "Renewable energy accounted for 29% of global electricity generation in 2022, showing significant progress toward clean energy goals."
+            },
+            {
+                question: "How much have solar panel costs decreased since 2010?",
+                options: ["30%", "50%", "70%", "Over 90%"],
+                correct: 3,
+                explanation: "Solar panel costs have decreased by over 90% since 2010, making solar energy increasingly affordable and accessible worldwide."
+            },
+            {
+                question: "What is the primary goal of UN SDG 7?",
+                options: [
+                    "Reduce carbon emissions by 50%",
+                    "Ensure access to affordable, reliable, and modern energy for all",
+                    "Build 1000 solar farms globally",
+                    "Ban fossil fuels by 2030"
+                ],
+                correct: 1,
+                explanation: "UN SDG 7 aims to ensure universal access to affordable, reliable, sustainable, and modern energy for all by 2030."
+            },
+            {
+                question: "How many homes can a single modern wind turbine power?",
+                options: ["100+ homes", "500+ homes", "1,500+ homes", "5,000+ homes"],
+                correct: 2,
+                explanation: "A single modern wind turbine can power over 1,500 homes, demonstrating the impressive capacity of wind energy technology."
+            },
+            {
+                question: "How much less energy do LED bulbs use compared to traditional incandescent bulbs?",
+                options: ["25%", "50%", "75%", "90%"],
+                correct: 2,
+                explanation: "LED bulbs use 75% less energy than traditional incandescent bulbs and last 25 times longer, making them highly efficient."
+            },
+            {
+                question: "What is the typical lifespan of solar panels?",
+                options: ["10-15 years", "15-20 years", "25-30 years", "40-50 years"],
+                correct: 2,
+                explanation: "Solar panels typically last 25-30 years with minimal maintenance, providing long-term clean energy generation."
+            },
+            {
+                question: "By what percentage can proper home insulation reduce heating and cooling costs?",
+                options: ["Up to 10%", "Up to 20%", "Up to 30%", "Up to 50%"],
+                correct: 2,
+                explanation: "Proper insulation can reduce heating and cooling costs by up to 30%, making it one of the most effective energy efficiency measures."
+            },
+            {
+                question: "How many jobs did the renewable energy sector create globally by 2022?",
+                options: ["5 million", "8 million", "Over 12 million", "20 million"],
+                correct: 2,
+                explanation: "Clean energy jobs grew to over 12 million worldwide by 2022, demonstrating the economic benefits of the renewable energy transition."
+            }
+        ];
+
+        let currentScore = 0;
+        let questionsAnswered = 0;
+
+        // Display random quiz question
+        function displayQuiz() {
+            const quizContent = document.getElementById('quizContent');
+            const randomIndex = Math.floor(Math.random() * quizQuestions.length);
+            const question = quizQuestions[randomIndex];
+
+            quizContent.innerHTML = `
+                <div class="quiz-question">
+                    <h3>${question.question}</h3>
+                    <div class="quiz-options" id="quizOptions">
+                        ${question.options.map((option, index) => `
+                            <div class="quiz-option" data-index="${index}" onclick="checkAnswer(${index}, ${question.correct}, '${question.explanation.replace(/'/g, "\\'")}')">
+                                ${option}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div id="quizFeedback"></div>
+                </div>
+                ${questionsAnswered > 0 ? `<div class="quiz-score">Score: ${currentScore} / ${questionsAnswered} correct</div>` : ''}
+            `;
+
+            quizContent.classList.add('active');
+        }
+
+        // Check quiz answer
+        function checkAnswer(selectedIndex, correctIndex, explanation) {
+            const options = document.querySelectorAll('.quiz-option');
+            const feedback = document.getElementById('quizFeedback');
+
+            // Disable all options
+            options.forEach(option => {
+                option.classList.add('disabled');
+                option.onclick = null;
+            });
+
+            // Mark correct and incorrect answers
+            options[correctIndex].classList.add('correct');
+            if (selectedIndex !== correctIndex) {
+                options[selectedIndex].classList.add('incorrect');
+            }
+
+            // Update score
+            questionsAnswered++;
+            if (selectedIndex === correctIndex) {
+                currentScore++;
+                feedback.innerHTML = `<div class="quiz-feedback correct">✅ Correct! ${explanation}</div>`;
+            } else {
+                feedback.innerHTML = `<div class="quiz-feedback incorrect">❌ Incorrect. ${explanation}</div>`;
+            }
+
+            // Update score display
+            const scoreDiv = document.querySelector('.quiz-score');
+            if (scoreDiv) {
+                scoreDiv.textContent = `Score: ${currentScore} / ${questionsAnswered} correct`;
+            }
+        }
+
+        // Make checkAnswer available globally
+        window.checkAnswer = checkAnswer;
+
+        // Event listeners
+        document.getElementById('askButton').addEventListener('click', handleAsk);
+        document.getElementById('userInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                handleAsk();
+            }
+        });
+
+        document.getElementById('quizButton').addEventListener('click', displayQuiz);
+
+        // Initialize chat on page load
+        window.addEventListener('load', initializeChat);
+    </script>
+</body>
+</html>
